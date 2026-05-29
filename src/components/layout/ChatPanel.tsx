@@ -51,7 +51,7 @@ export default function ChatPanel({ open, onToggle }: Props) {
               cost_out: 0,
               saving_in: 0,
             }));
-            await sb.from('cashflow').insert(cashflowRows);
+            await sb.from('cashflow').insert(cashflowRows as any);
           }
           showToast('✓ Added to Recommendations');
         } else if (action.type === 'add_task') {
