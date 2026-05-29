@@ -42,7 +42,8 @@ export default function ChatPanel({ open, onToggle }: Props) {
       try {
         const action = JSON.parse(match[1]);
         if (action.type === 'add_recommendation') {
-          const { data: recData } = await sb.from('recommendations').insert(action.data).select('id').single();
+          const { data: recDataRaw } = await sb.from('recommendations').insert(action.data).select().single()
+          const recData = recDataRaw as { id: string } | null
           if (recData?.id) {
             const cashflowRows = Array.from({ length: 8 }, (_, i) => ({
               rec_id: recData.id,
