@@ -9,23 +9,30 @@ interface ScenarioModellerProps {
 
 // ─── Formatting helpers ────────────────────────────────────────────────────────
 
-function fmtMoney(v: number): string {
+function fmtMoney(v: number | undefined): string {
+  if (v == null || isNaN(v)) return '—';
   return `£${v.toFixed(1)}m`;
 }
 
-function fmtPct(v: number): string {
+function fmtPct(v: number | undefined): string {
+  if (v == null || isNaN(v)) return '—';
   return `${v.toFixed(1)}%`;
 }
 
 // ─── EBITDA calculator ────────────────────────────────────────────────────────
 
+function n(v: unknown): number {
+  const x = Number(v);
+  return isNaN(x) ? 0 : x;
+}
+
 function calcEBITDA(inp: ScenarioInputs): number {
   const revenue_total =
-    (inp.trade_revenue + inp.us_revenue + inp.dtc_revenue) *
-    (1 + inp.avg_price_uplift_pct / 100);
-  const gross_profit = revenue_total * (inp.gross_margin_pct / 100);
+    (n(inp.trade_revenue) + n(inp.us_revenue) + n(inp.dtc_revenue)) *
+    (1 + n(inp.avg_price_uplift_pct) / 100);
+  const gross_profit = revenue_total * (n(inp.gross_margin_pct) / 100);
   const total_overhead =
-    inp.property + inp.headcount + inp.marketing + inp.other_overhead;
+    n(inp.property) + n(inp.headcount) + n(inp.marketing) + n(inp.other_overhead);
   return gross_profit - total_overhead;
 }
 
@@ -61,14 +68,16 @@ const INPUT_KEYS = ROWS.filter(
 // ─── Delta badge ───────────────────────────────────────────────────────────────
 
 function DeltaBadge({
-  value,
-  baseline,
+  value: rawValue,
+  baseline: rawBaseline,
   isPct,
 }: {
   value: number;
   baseline: number;
   isPct: boolean;
 }) {
+  const value = n(rawValue);
+  const baseline = n(rawBaseline);
   const diff = value - baseline;
   if (Math.abs(diff) < 0.0001) return null;
   const positive = diff > 0;
@@ -100,7 +109,7 @@ function DeltaBadge({
 // ─── Editable cell ────────────────────────────────────────────────────────────
 
 function EditableCell({
-  value,
+  value: rawValue,
   baseline,
   isPct,
   onChange,
@@ -112,6 +121,7 @@ function EditableCell({
   onChange: (v: number) => void;
   isBaseline: boolean;
 }) {
+  const value = n(rawValue);
   const [editing, setEditing] = useState(false);
   const [raw, setRaw] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
