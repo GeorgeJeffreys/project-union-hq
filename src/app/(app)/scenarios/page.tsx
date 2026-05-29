@@ -1,14 +1,10 @@
-import { getBaseUrl } from '@/lib/url';
+import { createServerClient } from '@/lib/supabase';
 import { Scenario } from '@/types/union';
 import ScenarioModeller from '@/components/scenarios/ScenarioModeller';
 
-async function getScenarios(): Promise<Scenario[]> {
-  const res = await fetch(`${getBaseUrl()}/api/scenarios`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export default async function ScenariosPage() {
-  const scenarios = await getScenarios();
+  const sb = createServerClient();
+  const { data } = await sb.from('scenarios').select('*').order('created_at');
+  const scenarios: Scenario[] = data ?? [];
   return <ScenarioModeller initialScenarios={scenarios} />;
 }

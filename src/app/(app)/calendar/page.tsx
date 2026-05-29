@@ -1,14 +1,10 @@
-import { getBaseUrl } from '@/lib/url';
+import { createServerClient } from '@/lib/supabase';
 import { Task } from '@/types/union';
 import CalendarModule from '@/components/calendar/CalendarModule';
 
-async function getTasks(): Promise<Task[]> {
-  const res = await fetch(`${getBaseUrl()}/api/tasks`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export default async function CalendarPage() {
-  const tasks = await getTasks();
+  const sb = createServerClient();
+  const { data } = await sb.from('tasks').select('*').order('week').order('created_at');
+  const tasks: Task[] = data ?? [];
   return <CalendarModule initialTasks={tasks} />;
 }

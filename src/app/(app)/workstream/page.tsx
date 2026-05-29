@@ -1,14 +1,10 @@
-import { getBaseUrl } from '@/lib/url';
+import { createServerClient } from '@/lib/supabase';
 import { Option } from '@/types/union';
 import WorkstreamExplorer from '@/components/workstream/WorkstreamExplorer';
 
-async function getOptions(): Promise<Option[]> {
-  const res = await fetch(`${getBaseUrl()}/api/options`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export default async function WorkstreamPage() {
-  const options = await getOptions();
+  const sb = createServerClient();
+  const { data } = await sb.from('options').select('*').order('created_at');
+  const options: Option[] = data ?? [];
   return <WorkstreamExplorer initialOptions={options} />;
 }
